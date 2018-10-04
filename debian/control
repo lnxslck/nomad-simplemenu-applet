@@ -1,4 +1,4 @@
-Source: plasma-widget-nomad-simplemenu
+Source: nomad-simplemenu-applet
 Section: unknown
 Priority: optional
 Maintainer: Alexis Lopez Zubieta <azubieta90@gmail.com>
@@ -7,7 +7,7 @@ Standards-Version: 3.9.6
 Homepage: https://github.com/nomad-shell/nomad-simplemenu
 Vcs-Git: https://github.com/nomad-shell/nomad-simplemenu.git
 
-Package: plasma-widget-nomad-simplemenu
+Package: nomad-simplemenu-applet
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Simple menu widget for plasma panel
