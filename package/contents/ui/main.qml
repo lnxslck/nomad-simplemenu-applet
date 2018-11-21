@@ -24,7 +24,7 @@ import org.kde.plasma.plasmoid 2.0
 import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 2.0 as PlasmaComponents
 
-import org.kde.plasma.private.nomadmenu 0.1 as NomadMenu
+import org.kde.plasma.private.kicker 0.1 as Kicker
 
 Item {
     id: kicker
@@ -45,12 +45,6 @@ Item {
     property QtObject globalFavorites: rootModel.favoritesModel
     property QtObject systemFavorites: rootModel.systemFavoritesModel
 
-    onSystemFavoritesChanged: {
-        systemFavorites.enabled = false;
-        systemFavorites.favorites = plasmoid.configuration.favoriteSystemActions;
-        systemFavorites.maxFavorites = 6;
-    }
-
     function action_menuedit() {
         processRunner.runMenuEditor();
     }
@@ -65,37 +59,60 @@ Item {
         MenuRepresentation {}
     }
 
-    NomadMenu.RootModel {
+    Kicker.RootModel {
         id: rootModel
+
+        autoPopulate: false
 
         appNameFormat: plasmoid.configuration.appNameFormat
         flat: true
         showSeparators: false
         appletInterface: plasmoid
 
-        groupsModel.json: plasmoid.configuration.groupsJson
+        paginate: true
+        pageSize: 24
 
-        showAllSubtree: true
-        //        showRecentApps: plasmoid.configuration.showRecentApps
-        //        showRecentDocs: plasmoid.configuration.showRecentDocs
-        //        showRecentContacts: plasmoid.configuration.showRecentContacts
+        showAllApps: true
+        showRecentApps: false
+        showRecentDocs: false
+        showRecentContacts: false
+        showPowerSession: false
 
-        onShowRecentAppsChanged: {
-            plasmoid.configuration.showRecentApps = showRecentApps;
+        onFavoritesModelChanged: {
+            if ("initForClient" in favoritesModel) {
+                favoritesModel.initForClient("org.kde.plasma.kicker.favorites.instance-" + plasmoid.id)
+
+                if (!plasmoid.configuration.favoritesPortedToKAstats) {
+                    favoritesModel.portOldFavorites(plasmoid.configuration.favoriteApps);
+                    plasmoid.configuration.favoritesPortedToKAstats = true;
+                }
+            } else {
+                favoritesModel.favorites = plasmoid.configuration.favoriteApps;
+            }
+
+            favoritesModel.maxFavorites = pageSize;
         }
 
-        onShowRecentDocsChanged: {
-            plasmoid.configuration.showRecentDocs = showRecentDocs;
+        onSystemFavoritesModelChanged: {
+            systemFavoritesModel.enabled = false;
+            systemFavoritesModel.favorites = plasmoid.configuration.favoriteSystemActions;
+            systemFavoritesModel.maxFavorites = 6;
         }
-
-        onShowRecentContactsChanged: {
-            plasmoid.configuration.showRecentContacts = showRecentContacts;
-        }
-
 
         Component.onCompleted: {
-            favoritesModel.favorites = plasmoid.configuration.favoriteApps;
-            favoritesModel.maxFavorites = 24;
+            if ("initForClient" in favoritesModel) {
+                favoritesModel.initForClient("org.kde.plasma.kicker.favorites.instance-" + plasmoid.id)
+
+                if (!plasmoid.configuration.favoritesPortedToKAstats) {
+                    favoritesModel.portOldFavorites(plasmoid.configuration.favoriteApps);
+                    plasmoid.configuration.favoritesPortedToKAstats = true;
+                }
+            } else {
+                favoritesModel.favorites = plasmoid.configuration.favoriteApps;
+            }
+
+            favoritesModel.maxFavorites = pageSize;
+            rootModel.refresh();
         }
     }
 
@@ -127,20 +144,21 @@ Item {
         }
     }
 
-    NomadMenu.RunnerModel {
+    Kicker.RunnerModel {
         id: runnerModel
 
         favoritesModel: globalFavorites
         runners: plasmoid.configuration.useExtraRunners ? new Array("services").concat(plasmoid.configuration.extraRunners) : "services"
+        appletInterface: plasmoid
 
         deleteWhenEmpty: false
     }
 
-    NomadMenu.DragHelper {
+    Kicker.DragHelper {
         id: dragHelper
     }
 
-    NomadMenu.ProcessRunner {
+    Kicker.ProcessRunner {
         id: processRunner;
     }
 
@@ -151,6 +169,14 @@ Item {
 
         imagePath: "widgets/viewitem"
         prefix: "hover"
+    }
+
+    PlasmaCore.FrameSvgItem {
+        id : panelSvg
+
+        visible: false
+
+        imagePath: "widgets/panel-background"
     }
 
     PlasmaComponents.Label {

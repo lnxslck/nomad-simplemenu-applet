@@ -29,11 +29,10 @@ MouseArea {
     id: item
 
     width: GridView.view.cellWidth
-    height: icon.y + icon.height + label.height + units.smallSpacing * 2
+    height: width
 
     signal actionTriggered(string actionId, variant actionArgument)
     signal aboutToShowActionMenu(variant actionMenu)
-    signal aboutToShowSubgroup(var groupModel)
 
     property bool showLabel: true
 
@@ -44,9 +43,6 @@ MouseArea {
         || (("hasActionList" in model) && (model.hasActionList == true)))
     property Item view: GridView.view
     property Item menu: actionMenu
-
-    property var childrenModel: GridView.view.model.modelForRow(index);
-    property var isGroup: childrenModel !== null
 
     Accessible.role: Accessible.MenuItem
     Accessible.name: model.display
@@ -64,21 +60,17 @@ MouseArea {
     }
 
     onReleased: {
-        if (isGroup)
-            aboutToShowSubgroup(childrenModel)
-        else {
-            if (pressed && GridView.view.currentItem == item) {
-                GridView.view.model.trigger(index, "", null);
+        if (pressed && GridView.view.currentItem == item) {
+            GridView.view.model.trigger(index, "", null);
 
-                if ("toggle" in root) {
-                    root.toggle();
-                } else {
-                    root.visible = false;
-                }
+            if ("toggle" in root) {
+                root.toggle();
+            } else {
+                root.visible = false;
             }
-
-            pressed = false;
         }
+
+        pressed = false;
     }
 
     onAboutToShowActionMenu: {
@@ -104,8 +96,9 @@ MouseArea {
         }
     }
 
-    Item {
+    PlasmaCore.IconItem {
         id: icon
+
         y: showLabel ? (2 * highlightItemSvg.margins.top) : 0
 
         anchors.horizontalCenter: parent.horizontalCenter
@@ -114,42 +107,10 @@ MouseArea {
         width: iconSize
         height: width
 
-        PlasmaCore.IconItem {
-            id: icon_simple
-            anchors.fill: parent
-            animated: false
-            usesPlasmaTheme: view.usesPlasmaTheme
+        animated: false
+        usesPlasmaTheme: view.usesPlasmaTheme
 
-            source: model.decoration
-            visible: !isGroup
-        }
-
-        PlasmaCore.FrameSvgItem  {
-            anchors.fill: parent
-            visible: icon_simple.visible == false
-
-            imagePath: "opaque/dialogs/background"
-
-            Flow {
-                anchors.fill: parent
-                anchors.margins: 4
-                spacing: 4
-                clip: true
-
-
-                Repeater {
-                    model: item.childrenModel
-                    delegate: PlasmaCore.IconItem {
-                        height: iconSize / 4
-                        width: iconSize / 4
-
-                        animated: false
-                        usesPlasmaTheme: view.usesPlasmaTheme
-                        source: decoration
-                    }
-                }
-            }
-        }
+        source: model.decoration
     }
 
     PlasmaComponents.Label {
@@ -180,16 +141,12 @@ MouseArea {
             openActionMenu(item);
         } else if ((event.key == Qt.Key_Enter || event.key == Qt.Key_Return)) {
             event.accepted = true;
-            if (isGroup)
-                aboutToShowSubgroup(childrenModel)
-            else {
-                GridView.view.model.trigger(index, "", null);
+            GridView.view.model.trigger(index, "", null);
 
-                if ("toggle" in root) {
-                    root.toggle();
-                } else {
-                    root.visible = false;
-                }
+            if ("toggle" in root) {
+                root.toggle();
+            } else {
+                root.visible = false;
             }
         }
     }

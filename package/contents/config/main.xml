@@ -31,7 +31,7 @@
       <default>preferred://browser,kontact.desktop,systemsettings.desktop,org.kde.dolphin.desktop,ktp-contactlist.desktop,org.kde.kate.desktop</default>
     </entry>
     <entry name="favoriteSystemActions" type="StringList">
-      <default>lock-screen,reboot,shutdown,logout</default>
+      <default>logout,lock-screen,reboot,shutdown</default>
     </entry>
     <entry name="hiddenApplications" type="StringList">
       <default></default>
@@ -50,10 +50,10 @@
     <entry name="removeApplicationCommand" type="String">
       <default>muon-discover --application</default>
     </entry>
-  </group>
-  <group name="Groups">
-  <entry name="groupsJson" type="String">
-  </entry>
-  <default>[]</default>
+
+    <entry name="favoritesPortedToKAstats" type="Bool">
+      <label>Are the favorites ported to use KActivitiesStats to allow per-activity favorites</label>
+      <default>false</default>
+    </entry>
   </group>
 </kcfg>

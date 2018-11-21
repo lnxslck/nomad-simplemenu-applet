@@ -179,7 +179,7 @@ FocusScope {
             }
 
             onContainsMouseChanged: {
-                if (!containsMouse) {
+                if (!containsMouse && (!currentItem || !currentItem.menu.opened)) {
                     gridView.currentIndex = -1;
                     pressX = -1;
                     pressY = -1;
@@ -255,22 +255,15 @@ FocusScope {
 
                     delegate: ItemGridDelegate {
                         showLabel: showLabels
-
-                        onAboutToShowSubgroup: function (model) {
-                            if (groupSubMenu.visible == true)
-                                groupSubMenu.hide()
-                            else
-                                groupSubMenu.show(currentItem, model)
-                        }
                     }
 
                     highlight: PlasmaComponents.Highlight {}
                     highlightFollowsCurrentItem: true
                     highlightMoveDuration: 0
 
-                    onCurrentIndexChanged: {
-                        if (currentIndex != -1) {
-                            focus = true;
+                    onCurrentItemChanged: {
+                        if (currentItem) {
+                            currentItem.menu.closed.connect(function() { gridView.currentIndex = -1; } );
                         }
                     }
 
@@ -284,6 +277,11 @@ FocusScope {
                     }
 
                     Keys.onLeftPressed: {
+                        if (currentIndex == -1) {
+                            currentIndex = 0;
+                            return;
+                        }
+
                         if (currentCol() != 0) {
                             event.accepted = true;
                             moveCurrentIndexLeft();
@@ -293,6 +291,11 @@ FocusScope {
                     }
 
                     Keys.onRightPressed: {
+                        if (currentIndex == -1) {
+                            currentIndex = 0;
+                            return;
+                        }
+
                         var columns = Math.floor(width / cellWidth);
 
                         if (currentCol() != columns - 1 && currentIndex != count - 1) {
@@ -304,6 +307,11 @@ FocusScope {
                     }
 
                     Keys.onUpPressed: {
+                        if (currentIndex == -1) {
+                            currentIndex = 0;
+                            return;
+                        }
+
                         if (currentRow() != 0) {
                             event.accepted = true;
                             moveCurrentIndexUp();
@@ -314,6 +322,11 @@ FocusScope {
                     }
 
                     Keys.onDownPressed: {
+                        if (currentIndex == -1) {
+                            currentIndex = 0;
+                            return;
+                        }
+
                         if (currentRow() < itemGrid.lastRow()) {
                             // Fix moveCurrentIndexDown()'s lack of proper spatial nav down
                             // into partial columns.
